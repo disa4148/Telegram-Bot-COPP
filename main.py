@@ -1,6 +1,10 @@
 import telebot
 import re
+import xlsxwriter
+#import EmailSender
 
+
+from email.mime.multipart import MIMEMultipart              # Многокомпонентный объект
 from telebot import types
 
 KeyboardRemove = telebot.types.ReplyKeyboardRemove()
@@ -14,7 +18,18 @@ age = 0
 number = 0
 int(number)
 int(age)
- 
+
+
+addr_from = "koly.bessonov.2004@mail.ru"
+addr_to = "Koskova@mail.ru"
+
+msg = MIMEMultipart()
+msg['From'] = addr_from
+msg['To'] = addr_to
+msg['Subject'] = "Тестовая отправка Exel"
+
+body = "А вот тебе и Exel:)"
+
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.from_user.id, "Добро пожаловать в телеграмм бот ЦОПП Кузбасса!\n\n" +
@@ -94,20 +109,19 @@ def get_number(message): #Получение номера телефона по�
         bot.send_message(message.from_user.id, 'Введите адрес электронной почты', parse_mode='html')
         bot.register_next_step_handler(message, get_email)
     else:
-        bot.send_message(message.from_user.id, 'Введите данные корректно', parse_mode='html')
+        bot.send_message(message.from_user.id, 'Введите коррекнтые данные', parse_mode='html')
         bot.register_next_step_handler(message, get_number)
 
 def get_email(message): #Получение эл.почты пользователя
     global email
     email = message.text
-    pattern = r"^[a-zA-Z0-9]{1,100}[@][a-z]{2,6}\.[a-z]{2,4}"
+    email_validate_pattern = r"^\S+@\S+\.\S+$"
 
-    if bool(re.match(pattern, email)) == True:  # Ищет по шаблону (Pattern) значение строки (email)
+    if bool(re.match(email_validate_pattern, email)) == True:  # Ищет по шаблону (regex) значение строки (email)
         bot.send_message(message.from_user.id, 'Введите ваш возраст?', parse_mode='html')
         bot.register_next_step_handler(message, get_age)
     else:
-        bot.send_message(message.from_user.id, 'Введите данные корректно',
-                         parse_mode='html')
+        bot.send_message(message.from_user.id, 'Введите корректные данные', parse_mode='html')
         bot.register_next_step_handler(message, get_email)
 
 def get_age(message): #Получение возраста пользователя, проверка на правильность заполнения полей
@@ -146,6 +160,19 @@ def callback_reply(call):
             bot.send_message(call.from_user.id, 'Все успешно заполнено', parse_mode='html')
             user_status = 'authorized'
 
+            Collected_Data = (['Имя', name], ['Фамилия', surname], ['Номер телефона', number], ['Адрес эл. почты', email], ['Возраст', age])
+            workbook = xlsxwriter.Workbook('C:/Users/7/Desktop/Collected_info_user.xlsx')
+            worksheet = workbook.add_worksheet("Лист 1")
+
+            for i, (item, information) in enumerate(Collected_Data, start=1):
+                worksheet.write(f'A{i}', item)
+                worksheet.write(f'B{i}', information)
+            workbook.close()
+
+            files = ["C:/Users/7/Desktop/Collected_info_user.xlsx"]
+            """""
+            ForEmail.send_email(addr_to, "Test Exel", "А вот и текст:)", files)  # Почта находится в файле ForEmail.py
+            """""
         elif call.data == 'False':
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
             btn_return_to_start = types.KeyboardButton("/reg")
