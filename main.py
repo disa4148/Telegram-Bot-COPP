@@ -67,27 +67,48 @@ def get_name(message): #Получение имени пользователя
 def get_surname(message): #Получение фамилии пользователя
     global surname
     surname = message.text
-    bot.send_message(message.from_user.id, 'Введите номер телефона', parse_mode='html')
-    bot.register_next_step_handler(message, get_number)
 
-
+    if (len(surname)) >= 2:
+        if (len(surname)) < 60:
+            if any(char.isdigit() for char in surname):
+                bot.send_message(message.from_user.id,
+                                 'Фамилия не должна содержать цифр, попробуйте ввести ещё раз', parse_mode='html')
+                bot.register_next_step_handler(message, get_surname)
+            else:
+                bot.send_message(message.from_user.id, 'Введите номер телефона', parse_mode='html')
+                bot.register_next_step_handler(message, get_number)
+        else:
+            bot.send_message(message.from_user.id, 'Фамилия слишком длинная, попробуйте ввести ещё раз',
+                             parse_mode='html')
+            bot.register_next_step_handler(message, get_surname)
+    else:
+        bot.send_message(message.from_user.id, 'Фамилия слишком короткая, попробуйте ввести ещё раз',
+                         parse_mode='html')
+        bot.register_next_step_handler(message, get_surname)
 def get_number(message): #Получение номера телефона пользователя
     global number
     number = message.text
-    bot.send_message(message.from_user.id, 'Введите адрес электронной почты', parse_mode='html')
-    bot.register_next_step_handler(message, get_email)
+    pattern = re.match(r'^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$', number)
 
+    if (bool(pattern)) == True:
+        bot.send_message(message.from_user.id, 'Введите адрес электронной почты', parse_mode='html')
+        bot.register_next_step_handler(message, get_email)
+    else:
+        bot.send_message(message.from_user.id, 'Введите данные корректно', parse_mode='html')
+        bot.register_next_step_handler(message, get_number)
 
 def get_email(message): #Получение эл.почты пользователя
     global email
     email = message.text
-    bot.send_message(message.from_user.id, 'Введите ваш возраст?', parse_mode='html')
-    bot.register_next_step_handler(message, get_age)
-    """""
+    pattern = r"^[a-zA-Z0-9]{1,100}[@][a-z]{2,6}\.[a-z]{2,4}"
+
+    if bool(re.match(pattern, email)) == True:  # Ищет по шаблону (Pattern) значение строки (email)
+        bot.send_message(message.from_user.id, 'Введите ваш возраст?', parse_mode='html')
+        bot.register_next_step_handler(message, get_age)
     else:
-       bot.send_message(message.from_user.id, 'В email адресе обязателен символ '@'\n\n, попробуйте снова', parse_mode='html')
-       bot.register_next_step_handler(message, get_email)
-    """""
+        bot.send_message(message.from_user.id, 'Введите данные корректно',
+                         parse_mode='html')
+        bot.register_next_step_handler(message, get_email)
 
 def get_age(message): #Получение возраста пользователя, проверка на правильность заполнения полей
     keyboard = types.InlineKeyboardMarkup(row_width=2)
@@ -105,6 +126,7 @@ def callback_reply(call):
     if call.data:
         if call.data == 'course':
             bot.send_message(call.from_user.id, 'Для записи на курс необходимо пройти регистрацию \n\nЗарегистрироваться можно здесь: <b>https://platform.copp42.ru/registration</b>\n\n Для регистрации в <b>Telegram</b> напишите <b>/reg</>',parse_mode='html')
+
         elif call.data == 'contacts':
             bot.send_message(call.from_user.id, 'Контакты: \n\n' +
                              "📍 650021, г.Кемерово, ул.Павленко, 1а\n\n" +
