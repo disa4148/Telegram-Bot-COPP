@@ -1,11 +1,12 @@
 import telebot
 import re
 
+from telebot import types  # Многокомпонентный объект
 
-from telebot import types
 
-
+KeyboardRemove = telebot.types.ReplyKeyboardRemove()
 bot = telebot.TeleBot('5826445945:AAGwHbEk5eklQu7BIOwszG84EALhWrzmCJw')
+
 
 #global name, surname, email, age, number
 name = ''
@@ -15,7 +16,6 @@ age = 0
 number = 0
 int(number)
 int(age)
-
 def get_name(message):  # Получение имени пользователя
     global name
     name = message.text
@@ -60,7 +60,7 @@ def get_surname(message):  # Получение фамилии пользова�
                          parse_mode='html')
         bot.register_next_step_handler(message, get_surname)
 
-def get_number(self, message):  # Получение номера телефона пользователя
+def get_number(message):  # Получение номера телефона пользователя
     global number
     number = message.text
     pattern = re.match(r'^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$',
@@ -72,8 +72,7 @@ def get_number(self, message):  # Получение номера телефон
     else:
         bot.send_message(message.from_user.id, 'Введите данные корректно', parse_mode='html')
         bot.register_next_step_handler(message, get_number)
-
-def get_email(self, message):  # Получение эл.почты пользователя
+def get_email(message):  # Получение эл.почты пользователя
     global email
     email = message.text
     pattern = r"^[a-zA-Z0-9]{1,100}[@][a-z]{2,6}\.[a-z]{2,4}"
@@ -85,8 +84,7 @@ def get_email(self, message):  # Получение эл.почты пользо
         bot.send_message(message.from_user.id, 'Введите данные корректно',
                          parse_mode='html')
         bot.register_next_step_handler(message, get_email)
-
-def get_age(self, message):  # Получение возраста пользователя, проверка на правильность заполнения полей
+def get_age(message):  # Получение возраста пользователя, проверка на правильность заполнения полей
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text='Да ✅', callback_data='True'))
     keyboard.add(types.InlineKeyboardButton(text='Нет ❌', callback_data='False'))
@@ -97,3 +95,6 @@ def get_age(self, message):  # Получение возраста пользо�
     question = 'Верно ли заполнены поля?\n\nВаше имя: ' + name + '\nВаша фамилия: ' + surname + '\nНомер телефона: ' + "+ " + str(
           number) + '\nАдрес эл. почты: ' + email + '\nВаш возраст: ' + str(age)
     bot.send_message(message.from_user.id, question, parse_mode='html', reply_markup=keyboard)
+
+
+#bot.polling(none_stop=True)

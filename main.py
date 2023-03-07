@@ -1,6 +1,7 @@
 import telebot
 import xlsxwriter
-import ForEmail, Users
+import ForEmail, Users, re
+
 
 
 from email.mime.multipart import MIMEMultipart              # Многокомпонентный объект
@@ -10,6 +11,15 @@ from telebot import types
 
 KeyboardRemove = telebot.types.ReplyKeyboardRemove()
 bot = telebot.TeleBot('5826445945:AAGwHbEk5eklQu7BIOwszG84EALhWrzmCJw')
+
+
+name = ''
+surname = ''
+email = ''
+age = 0
+number = 0
+int(number)
+int(age)
 
 addr_from = "koly.bessonov.2004@mail.ru"
 addr_to = "Koskova@mail.ru"
@@ -53,10 +63,12 @@ def get_menu(message):
 def start_reg(message):
     if user_status == 'unauthorized':
         bot.send_message(message.from_user.id, "Введите ваше имя", parse_mode='html', reply_markup=KeyboardRemove)
-        bot.register_next_step_handler(message, Users.get_name)
+        bot.register_next_step_handler(message, get_name)
+
     else:
         bot.send_message(message.from_user.id, "Вы уже авторизованы", parse_mode='html', reply_markup=KeyboardRemove)
-""""
+
+
 def get_name(message):  # Получение имени пользователя
     name = message.text
 
@@ -136,13 +148,12 @@ def get_age(message):  # Получение возраста пользоват�
         number) + '\nАдрес эл. почты: ' + email + '\nВаш возраст: ' + str(age)
     bot.send_message(message.from_user.id, question, parse_mode='html', reply_markup=keyboard)
 
-"""
+
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_reply(call):
     if call.data:
         if call.data == "course":
-            #bot.send_message(call.from_user.id,'Для записи на курс необходимо пройти регистрацию \n\nЗарегистрироваться можно здесь: <b>https://platform.copp42.ru/registration</b>\n\n Для регистрации в <b>Telegram</b> напишите <b>/reg</>',                             parse_mode='html')
             bot.send_message(call.from_user.id, 'Для записи на курс необходимо пройти регистрацию \n\nЗарегистрироваться можно здесь: <b>https://platform.copp42.ru/registration</b>\n\nДля регистрации в <b>Telegram</b> напишите <b>/reg\n\nЕсли вы уже зарегистрированы: <b>https://platform.copp42.ru/login</b></>',parse_mode='html')
 
         elif call.data == 'contacts':
