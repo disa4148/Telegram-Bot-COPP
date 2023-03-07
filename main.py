@@ -1,7 +1,7 @@
 import telebot
 import re
 import xlsxwriter
-#import EmailSender
+import EmailSender
 
 
 from email.mime.multipart import MIMEMultipart              # Многокомпонентный объект
@@ -170,9 +170,9 @@ def callback_reply(call):
             workbook.close()
 
             files = ["C:/Users/7/Desktop/Collected_info_user.xlsx"]
-            """""
-            ForEmail.send_email(addr_to, "Test Exel", "А вот и текст:)", files)  # Почта находится в файле ForEmail.py
-            """""
+
+            EmailSender.send_email(addr_to, "Test Exel", "А вот и текст:)", files)  # Почта находится в файле ForEmail.py
+
         elif call.data == 'False':
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
             btn_return_to_start = types.KeyboardButton("/reg")
