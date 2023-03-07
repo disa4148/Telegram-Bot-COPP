@@ -51,6 +51,13 @@ def get_menu(message):
 
     bot.send_message(message.from_user.id, "Выберите категорию:", parse_mode='html', reply_markup=keyboard )
 
+@bot.message_handler(commands=['course']) #Список доступных курсов
+def list_courses(message):
+    if user_status == 'authorized':
+        bot.send_message(message.from_user.id, "Список доступных курсов: ", parse_mode='html')
+    else:
+        bot.send_message(message.from_user.id, "Смотреть список курсов могут только <b>авторизованные</b> пользователи.\n\n " +
+                                               "Воспользуйтесь командой /reg для прохождения регистрации", parse_mode='html')
 
 @bot.message_handler(commands=['reg']) #Начало процедуры регистрации
 def start_reg(message):
@@ -157,7 +164,7 @@ def callback_reply(call):
 
         elif call.data == 'True':
             global user_status
-            bot.send_message(call.from_user.id, 'Все успешно заполнено', parse_mode='html')
+            bot.send_message(call.from_user.id, 'Все успешно заполнено 👏 \n\nВы можете ознакомиться с курсами с помощью команды <b> /course </b>', parse_mode='html')
             user_status = 'authorized'
 
             Collected_Data = (['Имя', name], ['Фамилия', surname], ['Номер телефона', number], ['Адрес эл. почты', email], ['Возраст', age])
