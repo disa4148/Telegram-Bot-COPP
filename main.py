@@ -70,7 +70,7 @@ def get_name(message): #Получение имени пользователя
     global name
     name = message.text
 
-    if (len(name)) >= 2 :
+    if (len(name)) >= 2:
         if (len(name)) < 20:
             if any(char.isdigit() for char in name): #Проверка на цифры в имени
                 bot.send_message(message.from_user.id, 'Имя не должно содержат цифр\n\n Попробуйте ввести ещё раз', parse_mode='html')
@@ -144,10 +144,13 @@ def get_age(message): #Получение возраста пользовате�
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_reply(call):
+    global user_status
     if call.data:
         if call.data == 'course':
-            bot.send_message(call.from_user.id, 'Для записи на курс необходимо пройти регистрацию \n\nЗарегистрироваться можно здесь: <b>https://platform.copp42.ru/registration</b>\n\n Для регистрации в <b>Telegram</b> напишите <b>/reg</>',parse_mode='html')
-
+            if user_status == 'unauthorized':
+                bot.send_message(call.from_user.id, 'Для записи на курс необходимо пройти регистрацию \n\nЗарегистрироваться можно здесь: <b>https://platform.copp42.ru/registration</b>\n\n Для регистрации в <b>Telegram</b> напишите <b>/reg</>',parse_mode='html')
+            elif user_status == 'authorized':
+                 list_courses(call)
         elif call.data == 'contacts':
             bot.send_message(call.from_user.id, 'Контакты: \n\n' +
                              "📍 650021, г.Кемерово, ул.Павленко, 1а\n\n" +
@@ -163,7 +166,7 @@ def callback_reply(call):
                              parse_mode='html', reply_markup=KeyboardRemove)
 
         elif call.data == 'True':
-            global user_status
+
             bot.send_message(call.from_user.id, 'Все успешно заполнено 👏 \n\nВы можете ознакомиться с курсами с помощью команды <b> /course </b>', parse_mode='html')
             user_status = 'authorized'
 
