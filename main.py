@@ -2,13 +2,14 @@ import telebot
 import re
 import xlsxwriter
 import EmailSender
+import json
 
 
 from email.mime.multipart import MIMEMultipart              # Многокомпонентный объект
 from telebot import types
 
 KeyboardRemove = telebot.types.ReplyKeyboardRemove()
-bot = telebot.TeleBot('5692248488:AAEt2w_r9NQxgdJYZifHtzhhlwadVPcc0DM')
+bot = telebot.TeleBot('5826445945:AAGwHbEk5eklQu7BIOwszG84EALhWrzmCJw')
 
 user_status = 'unauthorized'
 name = ''
@@ -54,7 +55,18 @@ def get_menu(message):
 @bot.message_handler(commands=['course']) #Список доступных курсов
 def list_courses(message):
     if user_status == 'authorized':
-        bot.send_message(message.from_user.id, "Список доступных курсов:  ", parse_mode='html')
+        #bot.send_message(message.from_user.id, "Список доступных курсов:  ", parse_mode='html')
+        count = 10
+        page = 1
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton(text='Скрыть', callback_data='unseen'))
+        markup.add(types.InlineKeyboardButton(text=f'{page}/{count}', callback_data=f' '),
+                   types.InlineKeyboardButton(text=f'Вперёд --->',
+                                              callback_data="{\"method\":\"pagination\",\"NumberPage\":" + str(
+                                                  page + 1) + ",\"CountPage\":" + str(count) + "}"))
+
+        bot.send_message(message.from_user.id, "Привет!!!", reply_markup=markup)
+
     else:
         bot.send_message(message.from_user.id, "Смотреть список курсов могут только <b>авторизованные</b> пользователи.\n\n " +
                                                "Воспользуйтесь командой /reg для прохождения регистрации", parse_mode='html')
@@ -66,6 +78,8 @@ def start_reg(message):
         bot.register_next_step_handler(message, get_name)
     else:
         bot.send_message(message.from_user.id, "Вы уже авторизованы", parse_mode='html', reply_markup=KeyboardRemove)
+
+
 def get_name(message): #Получение имени пользователя
     global name
     name = message.text
@@ -84,6 +98,7 @@ def get_name(message): #Получение имени пользователя
     else:
         bot.send_message(message.from_user.id, 'Имя слишком короткое\n\n Попробуйте ввести ещё раз', parse_mode='html')
         bot.register_next_step_handler(message, get_name)
+
 def get_surname(message): #Получение фамилии пользователя
     global surname
     surname = message.text
@@ -105,6 +120,7 @@ def get_surname(message): #Получение фамилии пользоват�
         bot.send_message(message.from_user.id, 'Фамилия слишком короткая, попробуйте ввести ещё раз',
                          parse_mode='html')
         bot.register_next_step_handler(message, get_surname)
+
 def get_number(message): #Получение номера телефона пользователя
     global number
     number = message.text
@@ -116,6 +132,7 @@ def get_number(message): #Получение номера телефона по�
     else:
         bot.send_message(message.from_user.id, 'Введите коррекнтые данные', parse_mode='html')
         bot.register_next_step_handler(message, get_number)
+
 def get_email(message): #Получение эл.почты пользователя
     global email
     email = message.text
@@ -127,6 +144,7 @@ def get_email(message): #Получение эл.почты пользовате
     else:
         bot.send_message(message.from_user.id, 'Введите корректные данные', parse_mode='html')
         bot.register_next_step_handler(message, get_email)
+
 def get_age(message): #Получение возраста пользователя, проверка на правильность заполнения полей
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text='Да ✅', callback_data='True'))
@@ -136,6 +154,25 @@ def get_age(message): #Получение возраста пользовате�
     age = message.text
     question = 'Верно ли заполнены поля?\n\nВаше имя: ' + name + '\nВаша фамилия: ' + surname + '\nНомер телефона: ' + "+ " + str(number) + '\nАдрес эл. почты: ' + email + '\nВаш возраст: ' + str(age)
     bot.send_message(message.from_user.id, question, parse_mode='html', reply_markup=keyboard)
+
+
+
+
+""""
+@bot.message_handler(content_types=['text'])
+def test_pagin(m):
+    count = 10
+    page = 1
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton(text='Скрыть', callback_data='unseen'))
+    markup.add(types.InlineKeyboardButton(text=f'{page}/{count}', callback_data=f' '),
+               types.InlineKeyboardButton(text=f'Вперёд --->', callback_data="{\"method\":\"pagination\",\"NumberPage\":" + str(page+1) + ",\"CountPage\":" + str(count) + "}"))
+
+    bot.send_message(m.from_user.id, "Привет!!!", reply_markup = markup)
+
+
+
+"""
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -167,7 +204,7 @@ def callback_reply(call):
             user_status = 'authorized'
 
             Collected_Data = (['Имя', name], ['Фамилия', surname], ['Номер телефона', number], ['Адрес эл. почты', email], ['Возраст', age])
-            workbook = xlsxwriter.Workbook('C:/Users/7/Desktop/Collected_info_user.xlsx')
+            workbook = xlsxwriter.Workbook('C:/Users/2/Desktop/Collected_info_user.xlsx')
             worksheet = workbook.add_worksheet("Лист 1")
 
             for i, (item, information) in enumerate(Collected_Data, start=1):
@@ -175,15 +212,58 @@ def callback_reply(call):
                 worksheet.write(f'B{i}', information)
             workbook.close()
 
-            files = ["C:/Users/7/Desktop/Collected_info_user.xlsx"]
+#            files = ["C:/Users/2/Desktop/Collected_info_user.xlsx"]
 
-            EmailSender.send_email(addr_to, "Test Exel", "А вот и текст:)", files)  # Почта находится в файле ForEmail.py
+#           EmailSender.send_email(addr_to, "Test Exel", "А вот и текст:)", files)  # Почта находится в файле ForEmail.py
 
         elif call.data == 'False':
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
             btn_return_to_start = types.KeyboardButton("/reg")
             markup.add(btn_return_to_start)
             bot.send_message(call.from_user.id, 'Нажми кнопку <b>"/reg"</b> для возврата назад', parse_mode='html', reply_markup=markup)
+
+
+
+
+    #Для пагнинации
+
+        req = call.data.split('_')
+        # Обработка кнопки - скрыть
+        if req[0] == 'unseen':
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+        # Обработка кнопок - вперед и назад
+        elif 'pagination' in req[0]:
+            # Расспарсим полученный JSON
+            json_string = json.loads(req[0])
+            count = json_string['CountPage']
+            page = json_string['NumberPage']
+            # Пересоздаем markup
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton(text='Скрыть', callback_data='unseen'))
+            # markup для первой страницы
+            if page == 1:
+                markup.add(types.InlineKeyboardButton(text=f'{page}/{count}', callback_data=f' '),
+                           types.InlineKeyboardButton(text=f'Вперёд --->',
+                                                callback_data="{\"method\":\"pagination\",\"NumberPage\":" + str(
+                                                    page + 1) + ",\"CountPage\":" + str(count) + "}"))
+            # markup для второй страницы
+            elif page == count:
+                markup.add(types.InlineKeyboardButton(text=f'<--- Назад',
+                                                callback_data="{\"method\":\"pagination\",\"NumberPage\":" + str(
+                                                    page - 1) + ",\"CountPage\":" + str(count) + "}"),
+                           types.InlineKeyboardButton(text=f'{page}/{count}', callback_data=f' '))
+            # markup для остальных страниц
+            else:
+                markup.add(types.InlineKeyboardButton(text=f'<--- Назад',
+                                                callback_data="{\"method\":\"pagination\",\"NumberPage\":" + str(
+                                                    page - 1) + ",\"CountPage\":" + str(count) + "}"),
+                           types.InlineKeyboardButton(text=f'{page}/{count}', callback_data=f' '),
+                           types.InlineKeyboardButton(text=f'Вперёд --->',
+                                                callback_data="{\"method\":\"pagination\",\"NumberPage\":" + str(
+                                                    page + 1) + ",\"CountPage\":" + str(count) + "}"))
+#           bot.edit_message_text(f'Страница {page} из {count}', reply_markup=markup, chat_id=call.message.chat.id, message_id=call.message.message_id)
+            bot.edit_message_text("Наши мероприятия:\n" +
+                                  " ", reply_markup=markup, chat_id=call.message.chat.id, message_id=call.message.message_id)
 
 """""
 def get_menu(message):
