@@ -158,21 +158,6 @@ def get_age(message): #Получение возраста пользовате�
 
 
 
-""""
-@bot.message_handler(content_types=['text'])
-def test_pagin(m):
-    count = 10
-    page = 1
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Скрыть', callback_data='unseen'))
-    markup.add(types.InlineKeyboardButton(text=f'{page}/{count}', callback_data=f' '),
-               types.InlineKeyboardButton(text=f'Вперёд --->', callback_data="{\"method\":\"pagination\",\"NumberPage\":" + str(page+1) + ",\"CountPage\":" + str(count) + "}"))
-
-    bot.send_message(m.from_user.id, "Привет!!!", reply_markup = markup)
-
-
-
-"""
 
 
 @bot.callback_query_handler(func=lambda call: True)
