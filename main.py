@@ -14,6 +14,7 @@ user_status = 'unauthorized'
 name = ''
 surname = ''
 email = ''
+categories_gr = ''
 age = 0 
 number = 0
 int(number)
@@ -43,7 +44,7 @@ def start(message):
     "✅ Вопросами международного сотрудничества;\n\n"+
     "✅ Организацией и проведением деловых встреч и мероприятий", parse_mode='html')
     get_menu(message)
-
+@bot.message_handler(commands=['menu']) #Список доступных курсов
 def get_menu(message):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text="Записаться на курс 👨‍💻", callback_data='course'))
@@ -132,26 +133,52 @@ def get_email(message): #Получение эл.почты пользовате
         bot.register_next_step_handler(message, get_email)
 
 def get_age(message): #Получение возраста пользователя, проверка на правильность заполнения полей
+    global age
+    age = message.text
+    get_categories(message)
+
+def get_categories(message): #Выбор категории гражданина
+
+    keyboard_cat = types.InlineKeyboardMarkup(row_width=1)
+    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 1', callback_data='one'))
+    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 2', callback_data='two'))
+    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 3', callback_data='four'))
+    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 5', callback_data='five'))
+    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 6', callback_data='six'))
+    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 7', callback_data='seven'))
+
+    bot.send_message(message.from_user.id, 'Выберите целевую аудиторию', parse_mode='html', reply_markup=keyboard_cat)
+
+def verification(message):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text='Да ✅', callback_data='True'))
     keyboard.add(types.InlineKeyboardButton(text='Нет ❌', callback_data='False'))
-    
-    global age
-    age = message.text
-    question = 'Верно ли заполнены поля?\n\nВаше имя: ' + name + '\nВаша фамилия: ' + surname + '\nНомер телефона: ' + "+ " + str(number) + '\nАдрес эл. почты: ' + email + '\nВаш возраст: ' + str(age)
+
+    question = 'Верно ли заполнены поля?\n\nВаше имя: ' + name + '\nВаша фамилия: ' + surname + '\nНомер телефона: ' + "+ " + str(
+        number) + '\nАдрес эл. почты: ' + email + '\nВаш возраст: ' + str(age) + '\nКатегория:' + categories_gr
     bot.send_message(message.from_user.id, question, parse_mode='html', reply_markup=keyboard)
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_reply(call):
     global user_status
+    global categories_gr
+
     if call.data:
+        if call.data == 'one':
+            categories_gr = 'Абоба'
+            bot.send_message(call.from_user.id, 'Вы выбрали категорию 1')
+            verification(call)
+        if call.data == 'two':
+            bot.send_message(call.from_user.id, 'Вы выбрали категорию 2')
+            verification(call)
+
         if call.data == 'course':
             if user_status == 'unauthorized':
                 bot.send_message(call.from_user.id, 'Для записи на курс необходимо пройти регистрацию \n\nЗарегистрироваться можно здесь: <b>https://platform.copp42.ru/registration</b>\n\n Для регистрации в <b>Telegram</b> напишите <b>/reg</>',parse_mode='html')
             elif user_status == 'authorized':
                  list_courses(call)
-        elif call.data == 'contacts':
+        elif call.data == 'contacts': #Вывод контактов
             bot.send_message(call.from_user.id, 'Контакты: \n\n' +
                              "📍 650021, г.Кемерово, ул.Павленко, 1а\n\n" +
                              "📞 +7 (3842) 57-11-20 \n📞 +7 (3842) 57-11-14\n\n" +
@@ -165,8 +192,7 @@ def callback_reply(call):
                              "Youtube канал: \n\nhttps://www.youtube.com/channel/UCn2HyuY_HBUy9L75sqx0qcw",
                              parse_mode='html', reply_markup=KeyboardRemove)
 
-        elif call.data == 'True':
-
+        elif call.data == 'True': #Если всё заполнено правильно
             bot.send_message(call.from_user.id, 'Все успешно заполнено 👏 \n\nВы можете ознакомиться с курсами с помощью команды <b> /course </b>', parse_mode='html')
             user_status = 'authorized'
 
@@ -174,7 +200,7 @@ def callback_reply(call):
             workbook = xlsxwriter.Workbook('C:/Users/7/Desktop/Collected_info_user.xlsx')
             worksheet = workbook.add_worksheet("Лист 1")
 
-            for i, (item, information) in enumerate(Collected_Data, start=1):
+            for i, (item, information) in enumerate(Collected_Data, start=1): #Создание Exel таблицы
                 worksheet.write(f'A{i}', item)
                 worksheet.write(f'B{i}', information)
             workbook.close()
@@ -183,26 +209,11 @@ def callback_reply(call):
 
             EmailSender.send_email(addr_to, "Test Exel", "А вот и текст:)", files)  # Почта находится в файле ForEmail.py
 
-        elif call.data == 'False':
+        elif call.data == 'False': #Если пользователь неправильно заполнил инф-цию о себе
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
             btn_return_to_start = types.KeyboardButton("/reg")
             markup.add(btn_return_to_start)
             bot.send_message(call.from_user.id, 'Нажми кнопку <b>"/reg"</b> для возврата назад', parse_mode='html', reply_markup=markup)
 
-"""""
-def get_menu(message):
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(types.InlineKeyboardButton(text="Записаться на курс 👨‍💻", callback_data='course'))
-    keyboard.add(types.InlineKeyboardButton(text="Наши контакты 🌍", callback_data='contacts'))
 
-    bot.send_message(message.from_user.id, "Выберите категорию:", parse_mode='html', reply_markup=keyboard )
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_reply(call):
-    if call.data:
-        if call.data == 'course':
-            bot.send_message(call.from_user.id, 'Для записи на курс необходимо пройти регистрацию \n\nЗарегистрироваться можно здесь: <b>https://platform.copp42.ru/registration</b>\n\n Для регистрации в <b>Telegram</b> напишите <b>/reg</>', parse_mode='html')
-        elif call.data == 'contacts':
-            bot.send_message(call.from_user.id, 'Контакты)', parse_mode='html')
-"""""
 bot.polling(none_stop=True)
