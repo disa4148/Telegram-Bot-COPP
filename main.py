@@ -151,15 +151,18 @@ def get_age(message): #Получение возраста пользовате�
 def get_categories(message): #Выбор категории гражданина
 
     keyboard_cat = types.InlineKeyboardMarkup(row_width=1)
-    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 1', callback_data='one'))
-    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 2', callback_data='two'))
-    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 3', callback_data='four'))
-    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 5', callback_data='five'))
-    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 6', callback_data='six'))
-    keyboard_cat.add(types.InlineKeyboardButton(text='Категория 7', callback_data='seven'))
+    categories = {
+        'Категория 1': 'one',
+        'Категория 2': 'two',
+        'Категория 3': 'four',
+        'Категория 5': 'five',
+        'Категория 6': 'six',
+        'Категория 7': 'seven'
+    }
+    for category, data in categories.items():
+        keyboard_cat.add(types.InlineKeyboardButton(text=category, callback_data=data))
 
     bot.send_message(message.from_user.id, 'Выберите целевую аудиторию', parse_mode='html', reply_markup=keyboard_cat)
-
 def verification(message):
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(types.InlineKeyboardButton(text='Да ✅', callback_data='True'))
@@ -176,12 +179,17 @@ def callback_reply(call):
     global categories_gr
 
     if call.data:
-        if call.data == 'one':
-            categories_gr = 'Абоба'
-            bot.send_message(call.from_user.id, 'Вы выбрали категорию 1')
-            verification(call)
-        if call.data == 'two':
-            bot.send_message(call.from_user.id, 'Вы выбрали категорию 2')
+        categories = {
+            'one': '1',
+            'two': '2',
+            'three': '3',
+            'four': '4',
+            'five': '5',
+            'six': '6'
+        }
+        if call.data in categories:
+            categories_gr = categories[call.data]
+            bot.send_message(call.from_user.id, f'Вы выбрали категорию {categories_gr}')
             verification(call)
 
         if call.data == 'course':
