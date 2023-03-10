@@ -152,12 +152,15 @@ def get_categories(message): #Выбор категории гражданина
 
     keyboard_cat = types.InlineKeyboardMarkup(row_width=1)
     categories = {
-        'Категория 1': 'one',
-        'Категория 2': 'two',
-        'Категория 3': 'four',
-        'Категория 5': 'five',
-        'Категория 6': 'six',
-        'Категория 7': 'seven'
+        'Студенты': 'one',
+        'Учащиеся общеобразоветельных учреждение 6-7 классы': 'two',
+        'Учащиеся общеобразоветельных учреждение 8-11 классы': 'three',
+        'Предпенсионеры': 'four',
+        'Взрослое население/Работающий': 'five',
+        'Работодатель': 'six',
+        'Все': 'seven'
+
+
     }
     for category, data in categories.items():
         keyboard_cat.add(types.InlineKeyboardButton(text=category, callback_data=data))
@@ -169,7 +172,7 @@ def verification(message):
     keyboard.add(types.InlineKeyboardButton(text='Нет ❌', callback_data='False'))
 
     question = 'Верно ли заполнены поля?\n\nВаше имя: ' + name + '\nВаша фамилия: ' + surname + '\nНомер телефона: ' + "+ " + str(
-        number) + '\nАдрес эл. почты: ' + email + '\nВаш возраст: ' + str(age) + '\nКатегория:' + categories_gr
+        number) + '\nАдрес эл. почты: ' + email + '\nВаш возраст: ' + str(age) + '\nКатегория: ' + categories_gr
     bot.send_message(message.from_user.id, question, parse_mode='html', reply_markup=keyboard)
 
 
@@ -180,12 +183,13 @@ def callback_reply(call):
 
     if call.data:
         categories = {
-            'one': '1',
-            'two': '2',
-            'three': '3',
-            'four': '4',
-            'five': '5',
-            'six': '6'
+            'one': 'Студенты',
+            'two': 'Учащиеся общеобразоветельных учреждение 6-7 классы',
+            'three': 'Учащиеся общеобразоветельных учреждение 8-11 классы',
+            'four': 'Предпенсионеры',
+            'five': 'Взрослое население/Работающий',
+            'six': 'Работодатель',
+            'seven': 'Все'
         }
         if call.data in categories:
             categories_gr = categories[call.data]
