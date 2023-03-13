@@ -1,11 +1,13 @@
 import telebot
 import re
-import xlsxwriter
-import EmailSender
 import json
 
+import EmailSender
+import CreateExcelTable
+import Pagination
 from email.mime.multipart import MIMEMultipart              # Многокомпонентный объект
 from telebot import types
+from email.mime.multipart import MIMEMultipart
 
 KeyboardRemove = telebot.types.ReplyKeyboardRemove()
 bot = telebot.TeleBot('5692248488:AAEt2w_r9NQxgdJYZifHtzhhlwadVPcc0DM')
@@ -19,17 +21,6 @@ age = 0
 number = 0
 int(number)
 int(age)
-
-
-addr_from = "koly.bessonov.2004@mail.ru"
-addr_to = "Koskova@mail.ru"
-
-msg = MIMEMultipart()
-msg['From'] = addr_from
-msg['To'] = addr_to
-msg['Subject'] = "Тестовая отправка Exel"
-
-body = "А вот тебе и Exel:)"
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -51,7 +42,6 @@ def get_menu(message):
     keyboard.add(types.InlineKeyboardButton(text="Наши контакты 🌍", callback_data='contacts'))
 
     bot.send_message(message.from_user.id, "Выберите категорию:", parse_mode='html', reply_markup=keyboard )
-
 
 @bot.message_handler(commands=['course']) #Список доступных курсов
 def list_courses(message):
@@ -97,7 +87,6 @@ def get_name(message): #Получение имени пользователя
         bot.send_message(message.from_user.id, 'Имя слишком короткое\n\n Попробуйте ввести ещё раз', parse_mode='html')
         bot.register_next_step_handler(message, get_name)
 
-
 def get_surname(message): #Получение фамилии пользователя
     global surname
     surname = message.text
@@ -130,7 +119,6 @@ def get_number(message): #Получение номера телефона по�
     else:
         bot.send_message(message.from_user.id, 'Введите коррекнтые данные', parse_mode='html')
         bot.register_next_step_handler(message, get_number)
-
 def get_email(message): #Получение эл.почты пользователя
     global email
     email = message.text
@@ -142,12 +130,10 @@ def get_email(message): #Получение эл.почты пользовате
     else:
         bot.send_message(message.from_user.id, 'Введите корректные данные', parse_mode='html')
         bot.register_next_step_handler(message, get_email)
-
 def get_age(message): #Получение возраста пользователя, проверка на правильность заполнения полей
     global age
     age = message.text
     get_categories(message)
-
 def get_categories(message): #Выбор категории гражданина
 
     keyboard_cat = types.InlineKeyboardMarkup(row_width=1)
@@ -159,8 +145,6 @@ def get_categories(message): #Выбор категории гражданина
         'Взрослое население/Работающий': 'five',
         'Работодатель': 'six',
         'Все': 'seven'
-
-
     }
     for category, data in categories.items():
         keyboard_cat.add(types.InlineKeyboardButton(text=category, callback_data=data))
@@ -198,9 +182,10 @@ def callback_reply(call):
 
         if call.data == 'course':
             if user_status == 'unauthorized':
-                bot.send_message(call.from_user.id, 'Для записи на курс необходимо пройти регистрацию \n\nЗарегистрироваться можно здесь: <b>https://platform.copp42.ru/registration</b>\n\n Для регистрации в <b>Telegram</b> напишите <b>/reg</>',parse_mode='html')
+                bot.send_message(call.from_user.id, 'Для записи на курс необходимо пройти регистрацию \n\nЗарегистрироваться можно здесь: <b>https://platform.copp42.ru/registration</b>\n\n Для регистрации в <b>Telegram</b> напишите <b>/reg</>', parse_mode='html')
             elif user_status == 'authorized':
-                 list_courses(call)
+                list_courses(call)
+
         elif call.data == 'contacts': #Вывод контактов
             bot.send_message(call.from_user.id, 'Контакты: \n\n' +
                              "📍 650021, г.Кемерово, ул.Павленко, 1а\n\n" +
@@ -218,19 +203,7 @@ def callback_reply(call):
         elif call.data == 'True': #Если всё заполнено правильно
             bot.send_message(call.from_user.id, 'Все успешно заполнено 👏 \n\nВы можете ознакомиться с курсами с помощью команды <b> /course </b>', parse_mode='html')
             user_status = 'authorized'
-
-            Collected_Data = (['Имя', name], ['Фамилия', surname], ['Номер телефона', number], ['Адрес эл. почты', email], ['Возраст', age])
-            workbook = xlsxwriter.Workbook('C:/Users/7/Desktop/Collected_info_user.xlsx')
-            worksheet = workbook.add_worksheet("Лист 1")
-
-            for i, (item, information) in enumerate(Collected_Data, start=1): #Создание Exel таблицы
-                worksheet.write(f'A{i}', item)
-                worksheet.write(f'B{i}', information)
-            workbook.close()
-
-            files = ["C:/Users/7/Desktop/Collected_info_user.xlsx"]
-
-            EmailSender.send_email(addr_to, "Test Exel", "А вот и текст:)", files)  # Почта находится в файле ForEmail.py
+            CreateExcelTable.InsertTable(name,surname,number,email,age,user_status,EmailSender.addr_to)
 
         elif call.data == 'False': #Если пользователь неправильно заполнил инф-цию о себе
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -238,10 +211,9 @@ def callback_reply(call):
             markup.add(btn_return_to_start)
             bot.send_message(call.from_user.id, 'Нажми кнопку <b>"/reg"</b> для возврата назад', parse_mode='html', reply_markup=markup)
 
-            # Для пагнинации
-
+        # Для пагнинации
         req = call.data.split('_')
-        # Обработка кнопки - скрыть
+
         if req[0] == 'unseen':
             bot.delete_message(call.message.chat.id, call.message.message_id)
         # Обработка кнопок - вперед и назад
@@ -274,10 +246,9 @@ def callback_reply(call):
                            types.InlineKeyboardButton(text=f'Вперёд --->',
                                                       callback_data="{\"method\":\"pagination\",\"NumberPage\":" + str(
                                                           page + 1) + ",\"CountPage\":" + str(count) + "}"))
-            #           bot.edit_message_text(f'Страница {page} из {count}', reply_markup=markup, chat_id=call.message.chat.id, message_id=call.message.message_id)
+            # bot.edit_message_text(f'Страница {page} из {count}', reply_markup=markup, chat_id=call.message.chat.id, message_id=call.message.message_id)
             bot.edit_message_text("Наши мероприятия:\n" +
                                   " ", reply_markup=markup, chat_id=call.message.chat.id,
                                   message_id=call.message.message_id)
-
 
 bot.polling(none_stop=True)

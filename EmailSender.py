@@ -1,8 +1,5 @@
 import os
 import smtplib
-
-
-
 # Добавляем необходимые подклассы - MIME-типы
 import mimetypes                                            # Импорт класса для обработки неизвестных MIME-типов, базирующихся на расширении файла
 from email import encoders                                  # Импортируем энкодер
@@ -12,6 +9,15 @@ from email.mime.image import MIMEImage                      # Изображен
 from email.mime.audio import MIMEAudio                      # Аудио
 from email.mime.multipart import MIMEMultipart              # Многокомпонентный объект
 
+addr_from = "koly.bessonov.2004@mail.ru"
+addr_to = "Koskova@mail.ru"
+
+msg = MIMEMultipart()
+msg['From'] = addr_from
+msg['To'] = addr_to
+msg['Subject'] = "Тестовая отправка Exel"
+
+body = "Заявка :)"
 
 
 def send_email(addr_to, msg_subj, msg_text, files):
