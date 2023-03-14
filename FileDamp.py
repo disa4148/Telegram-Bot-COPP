@@ -1,11 +1,28 @@
 import requests
 import json
+import main
 
 
 #JSON для мероприятий
-#response = requests.get('https://dev.copp42.ru/programs')
-#print(response.json()[0]['name'])
+#response = requests.get('https://www.mininghamster.com/api/v2/aI6dgBApSPbph0kDISXNCaoHYvVgXTfS')
+#print(response.json()[0]['success'])
 
-string = '{"answer": "Hello, bro, I am working!"}'
-o = json.loads(string)
-print(o['answer'])
+
+# f = json.loads("CategoriesInfo.json")
+#
+# for item in f:
+#     print(item)
+
+#with open('CategoriesInfo.json', encoding='utf-8') as f:
+ #   data = f.read()
+ #   categories = json.loads(data)
+
+#for i in categories:
+#    print(i)
+#    for j in categories[i]:
+#        print(j)
+
+users = {}
+users.update({message.chat.id : value})
+for i in main.users:
+    print(i)
